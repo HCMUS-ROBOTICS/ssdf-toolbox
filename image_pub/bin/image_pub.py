@@ -68,7 +68,7 @@ def main():
         msg.header.stamp = rospy.Time.now()
         image_path = image_paths[index]
 
-        rospy.loginfo('image_path = %s', str(image_path))
+        rospy.logdebug('image_path = %s', str(image_path))
 
         image = cv2.imread(str(image_path), cv2.IMREAD_ANYCOLOR)
         msg.data = np.array(cv2.imencode(f'.{msg_format}', image)[1]).tobytes()
