@@ -7,7 +7,7 @@ This package is used for publishing images located in a folder to a topic. It mi
 
 **Arguments**
 - `image_path`: The image location. It could be a path to an image file or a directory containing images.
-- `pub_topic` (optional): The publising topic. Default is `/camera/rgb/image/compressed`
+- `pub_topic` (optional): The publising topic. Default is `/camera/rgb/image/compressed`. **Note**: You must add `/compressed` explicitly by yourself.
 - `rate` (optional): The publishing rate. Default is `15` Hz
 - `loop` (optional): Re-run from the beginning instead of exiting. Default is `False`
 - `imshow` (optional): Whether to show image using `cv2` or not. Default is `False`
@@ -26,5 +26,5 @@ When `image_path` is a directory, you might want to set some optional arguments:
 **Running examples**
 
 ```bash
-rosrun image_pub image_pub.py _pub_topic:=/lane_seg _image_path:=<image_dir> _msg_format:='jpeg' _loop:=true
+rosrun image_pub image_pub.py _pub_topic:=/lane_seg/compressed _image_path:=<image_dir> _msg_format:='jpeg' _loop:=true
 ```
