@@ -3,10 +3,9 @@ Some utility packages for SSDF
 
 ## image_pub package
 
-This package is used for publishing images located in a folder to a topic. It might useful in case you have extracted or recorded image files from external sources and want to use them for debugging.
+This package is used for publishing images located in a folder to a topic. It might be useful in case you have extracted or recorded image files from external sources and want to use them for debugging.
 
 **Arguments**
-
 - `image_path`: The image location. It could be a path to an image file or a directory containing images.
 - `pub_topic` (optional): The publising topic. Default is `/camera/rgb/image/compressed`
 - `rate` (optional): The publishing rate. Default is `15` Hz
@@ -19,7 +18,7 @@ When `image_path` is a directory, you might want to set some optional arguments:
 - `disable_sort` (optional): disable sorting images by file names. We sort images by default. Defaul is `False`.
 
 **Publishing topics**
-- pub_topic (`CompressedImage`): Default is `/camera/rgb/image/compressed`.
+- `pub_topic` (`CompressedImage`): Default is `/camera/rgb/image/compressed`.
 
 **Subscribing topics**
 - None
