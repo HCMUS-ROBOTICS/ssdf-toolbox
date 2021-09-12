@@ -34,7 +34,7 @@ class FolderImageReader
     : public ImageReader
 {
 public:
-    FolderImageReader(fs::path imagePath)
+    FolderImageReader(fs::path imagePath, bool isDisableSort = false)
         : _curIndex{0}
     {
         if (!fs::is_directory(imagePath))
@@ -52,7 +52,8 @@ public:
         if (_imagePaths.empty())
             throw std::runtime_error("image folder is empty");
 
-        std::sort(_imagePaths.begin(), _imagePaths.end());
+        if (!isDisableSort)
+            std::sort(_imagePaths.begin(), _imagePaths.end());
     }
 
     virtual std::optional<cv::Mat> get() override
@@ -133,7 +134,9 @@ public:
             }
             if (fs::is_directory(imagePath))
             {
-                return std::make_shared<FolderImageReader>(imagePath);
+                bool isDisableSort = false;
+                ros::param::get("~disable_sort", isDisableSort);
+                return std::make_shared<FolderImageReader>(imagePath, isDisableSort);
             }
             else if (fs::is_regular_file(imagePath))
             {
@@ -144,7 +147,7 @@ public:
                 throw std::runtime_error("image path is not supported.");
             }
         }
-        catch (const std::exception& e)
+        catch (const std::exception &e)
         {
             ROS_FATAL_STREAM(e.what());
             return nullptr;
@@ -193,7 +196,6 @@ int main(int argc, char **argv)
 
     bool isImShow = false;
     ros::param::get("~imshow", isImShow);
-
 
     float rate = 15;
     ros::param::get("~rate", rate);
