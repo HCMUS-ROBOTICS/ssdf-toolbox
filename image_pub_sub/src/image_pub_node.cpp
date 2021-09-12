@@ -10,10 +10,23 @@
 
 namespace fs = std::filesystem;
 
+/**
+ * @brief A base class provides some common methods to read image from a source
+ */
 class ImageReader
 {
 public:
+    /**
+     * @brief Get an image from a source
+     * @return an image if the source is readable, otherwise an std::nullopt
+     */
     virtual std::optional<cv::Mat> get() = 0;
+
+    /**
+     * @brief Set looping so that when the source reaches its end. It can go back
+     * to the begining
+     * @param isLoop whether to loop or not
+     */
     void setLoop(bool isLoop)
     {
         this->_isLoop = isLoop;
@@ -30,10 +43,20 @@ private:
     bool _isLoop = false;
 };
 
+/**
+ * @brief A class to read images from a folder containing ONLY images.
+ * Since we only list all the file in the given directory, it might not
+ * work if this folder contains a strange file, i.e. a text file.
+ */
 class FolderImageReader
     : public ImageReader
 {
 public:
+    /**
+     * @brief A default constructor
+     * @param imagePath a directory path
+     * @param isDisableSort whether to sort the paths or not. Use with your caution.
+     */
     FolderImageReader(fs::path imagePath, bool isDisableSort = false)
         : _curIndex{0}
     {
@@ -84,10 +107,20 @@ private:
     std::vector<fs::path> _imagePaths;
 };
 
+/**
+ * @brief A class to read image from a singular file.
+ * It is convenient for debugging when you just want
+ * this node to publish a single image for the whole life time.
+ */
 class FileImageReader
     : public ImageReader
 {
 public:
+    /**
+     * @brief A default constructor
+     * @param imagePath a path to an image file. Only supports types that
+     * OpenCV supports.
+     */
     FileImageReader(fs::path imagePath)
         : _isReadOnce{false}
     {
@@ -121,9 +154,19 @@ private:
     cv::Mat _image;
 };
 
+/**
+ * @brief A default ImageReader factory
+ * This class provide an easy to use that hiding if/else from
+ * the main function.
+ */
 class ImageReaderFactory
 {
 public:
+    /**
+     * @brief Open an ImageReader given an image path
+     * @param imagePath the image path. It could be a single image file
+     * or a directory containing images.
+     */
     static std::shared_ptr<ImageReader> open(const fs::path &imagePath)
     {
         try
