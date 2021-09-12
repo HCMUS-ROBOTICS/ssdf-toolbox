@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.0.2)
-project(image_pub)
+project(image_pub_sub)
 
 find_package(catkin REQUIRED COMPONENTS
   rospy
