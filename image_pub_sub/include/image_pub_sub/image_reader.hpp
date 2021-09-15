@@ -24,6 +24,10 @@ public:
 
     bool isLoop() const { return this->_isLoop; }
 
+    /**
+     * @brief Get the number of images in this reader
+     * @return the number of images in this reader
+     */
     virtual size_t size() const = 0;
 
 private:

@@ -17,6 +17,7 @@ public:
      * @brief Open an ImageReader given an image path
      * @param imagePath the image path. It could be a single image file
      * or a directory containing images.
+     * @return a shared pointer to an ImageReader instance
      */
     static std::shared_ptr<ImageReader> open(const std::filesystem::path &imagePath)
     {
@@ -59,6 +60,14 @@ public:
 class ImageWriterFactory
 {
 public:
+
+    /**
+     * @brief Create ImageWriter instance
+     * This method will create outputDir if it does not exist.
+     * @param outputDir the output location to store the output images/videos
+     * @param outVideo whether to write down a video or image frames
+     * @return a shared pointer to an ImageWriter instance
+     */
     static std::shared_ptr<ImageWriter> open(const std::filesystem::path &outputDir, bool outVideo)
     {
         namespace fs = std::filesystem;

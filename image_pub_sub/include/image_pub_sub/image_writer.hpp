@@ -3,12 +3,37 @@
 #include <opencv2/opencv.hpp>
 #include <string>
 
+/**
+ * @brief A base class provides some common methods to write image to a directory
+ */
 class ImageWriter
 {
 public:
+
+    /**
+     * @brief Default constructor
+     * @param outputDir the output directory
+     */
     ImageWriter(const std::filesystem::path &outputDir);
+
+    /**
+     * @brief Open writer
+     * This should be overridden by inheritted classes. Usually perform initialization here.
+     */
     virtual void open() = 0;
+
+    /**
+     * @brief Write an image
+     * @note This method should be called at the end of the overridden method to update the frameCount
+     * as well as splitting.
+     * @param image the image to write
+     */
     virtual void write(const cv::Mat &image);
+
+    /**
+     * @brief Closing this writer
+     * This should be overridden by inheritted classes. Usually perform releasing stuff here.
+     */
     virtual void close() = 0;
     virtual void split(size_t splitCount) = 0;
 
