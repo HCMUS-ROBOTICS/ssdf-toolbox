@@ -33,10 +33,11 @@ public:
     virtual void write(const cv::Mat &image)
     {
         _frameCounter++;
-        if (_frameCounter % _numSplit == 0)
+        if (_numSplit > 0 && _frameCounter % _numSplit == 0)
         {
             _frameCounter = 0;
             _splitCounter++;
+            ROS_DEBUG_STREAM("Reach " << _numSplit << " frame(s). Split writer at frame = " << _frameCounter);
             this->split(_splitCounter);
         }
     }
@@ -107,32 +108,67 @@ class VideoFileWriter
     : public ImageWriter
 {
 public:
-    // VideoFileWriter(const fs::path &outPath, int fourcc, double fps = 24, cv::Size frameSize = {})
-    //     : _outPath{outPath}, _fourcc{fourcc}, _fps{fps}, _frameSize{frameSize}
-    // {
-    // }
-    // VideoFileWriter() : VideoFileWriter("", cv::VideoWriter::fourcc('M', 'P', '4', 'V'), 24) {}
+    VideoFileWriter(const fs::path &outputDir, int fourcc, double fps = 24)
+        : ImageWriter(outputDir), _fourcc{fourcc}, _fps{fps}
+    {
+    }
 
-    // virtual void open() override
-    // {
-    //     if (_outPath.empty())
-    //     {
-    //         _outPath = fs::();
-    //     }
+    VideoFileWriter(const fs::path &outputDir)
+        : VideoFileWriter(outputDir, cv::VideoWriter::fourcc('m', 'p', '4', 'v'), 24)
+    {
+    }
 
-    //     if (!_impl.isOpened())
-    //     {
-    //         throw std::runtime_error("Unable to open video file to write");
-    //     }
-    // }
+    VideoFileWriter() : VideoFileWriter(fs::current_path()) {}
 
-    // virtual void write(const cv::Mat &image) override
-    // {
-    //     _impl.write(image);
-    // }
+    virtual void open() override
+    {
+        this->split(0);
+    }
+
+    virtual void write(const cv::Mat &image) override
+    {
+        cv::Size imageSize{image.cols, image.rows};
+        if (_frameSize.empty() || _frameSize != imageSize)
+        {
+            _frameSize = imageSize;
+            this->split(this->getFrameCount());
+        }
+        _impl.write(image);
+        ImageWriter::write(image);
+    }
+
+    virtual void split(size_t splitCount) override
+    {
+        if (_impl.isOpened())
+            _impl.release();
+        auto filePath = getFilePath(splitCount);
+        if (!_impl.open(filePath, _fourcc, _fps, _frameSize))
+        {
+            if (!_frameSize.empty())
+            {
+                ROS_ERROR_STREAM("Error open video path: " << filePath);
+                throw std::runtime_error("Unable to open video file to write");
+            }
+        }
+        else
+        {
+            ROS_INFO_STREAM("Create video path: " << filePath);
+        }
+    }
+
+    virtual void close() override { _impl.release(); }
 
 private:
-    fs::path _outPath;
+    fs::path getFilePath(size_t splitCount) const
+    {
+        std::ostringstream out{"video_"};
+        out.fill('0');
+        out.width(10);
+        out << splitCount << ".mp4";
+        return this->getOutputDir() / out.str();
+    }
+
+private:
     int _fourcc;
     double _fps;
     cv::Size _frameSize;
@@ -150,8 +186,7 @@ public:
 
             if (outVideo)
             {
-                return nullptr;
-                // return std::make_shared<VideoFileWriter>();
+                return std::make_shared<VideoFileWriter>(outputDir);
             }
             else
             {
@@ -194,16 +229,15 @@ int main(int argc, char **argv)
 
     writer->open();
 
-    int num_split = 5; // No split
-    ros::param::get("~n_split", num_split);
-    // writer->setNumSplit(num_split);
+    int num_split = 0;
+    ros::param::get("~num_split", num_split);
+    writer->setNumSplit(num_split);
 
     auto callback = [&](const sensor_msgs::ImageConstPtr &msg)
     {
-        cv_bridge::CvImagePtr cv_ptr;
         try
         {
-            cv_ptr = cv_bridge::toCvCopy(msg);
+            auto cv_ptr = cv_bridge::toCvShare(msg);
             if (!cv_ptr->image.empty())
             {
                 writer->write(cv_ptr->image);
