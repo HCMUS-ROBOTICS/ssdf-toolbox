@@ -19,6 +19,7 @@ catkin_package(
 include_directories(${catkin_INCLUDE_DIRS})
 
 add_executable(image_pub_node src/image_pub_node.cpp)
+add_executable(image_sub_node src/image_sub_node.cpp)
 
 target_link_libraries(
   image_pub_node
@@ -26,8 +27,15 @@ target_link_libraries(
   ${OpenCV_LIBS}
 )
 
-add_dependencies(image_pub_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+target_link_libraries(
+  image_sub_node
+  ${catkin_LIBRARIES}
+  ${OpenCV_LIBS}
+)
 
-install(TARGETS image_pub_node
+add_dependencies(image_pub_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+add_dependencies(image_sub_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+
+install(TARGETS image_pub_node image_sub_node
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
