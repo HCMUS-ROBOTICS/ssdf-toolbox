@@ -1,7 +1,7 @@
 #pragma once
 #include <optional>
 #include <filesystem>
-#include <opencv2/core.hpp>
+#include <opencv2/opencv.hpp>
 
 /**
  * @brief A base class provides some common methods to read image from a source
@@ -79,7 +79,47 @@ public:
 
     virtual size_t size() const override { return 1l; }
 
+    /**
+     * @brief Check if the given path is an image or not
+     * @param path a path to an image file. Only supports types that
+     * OpenCV supports.
+     * @return true if this path is pointed to an image, false otherwise.
+     */
+    static bool isImageFile(const std::filesystem::path &path);
+
 private:
     bool _isReadOnce;
     cv::Mat _image;
+};
+
+/**
+ * @brief A class to read image frames from a video file.
+ */
+class VideoFileReader
+    : public ImageReader
+{
+public:
+    /**
+     * @brief A default constructor
+     * @param imagePath a path to a video file. Only supports types that
+     * OpenCV supports.
+     */
+    VideoFileReader(const std::filesystem::path &videoPath);
+
+    virtual std::optional<cv::Mat> get() override;
+
+    virtual size_t size() const override;
+
+    /**
+     * @brief Check if the given path is a video or not
+     * @param path a path to a video. Only supports types that
+     * OpenCV supports.
+     * @return true if this path is pointed to a video file, false otherwise.
+     */
+    static bool isVideoFile(const std::filesystem::path &path);
+
+private:
+    bool _isReadOnce;
+    std::filesystem::path _videoPath;
+    cv::VideoCapture _video;
 };

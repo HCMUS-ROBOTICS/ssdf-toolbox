@@ -36,7 +36,11 @@ public:
             }
             else if (fs::is_regular_file(imagePath))
             {
-                return std::make_shared<FileImageReader>(imagePath);
+                if (FileImageReader::isImageFile(imagePath))
+                    return std::make_shared<FileImageReader>(imagePath);
+                if (VideoFileReader::isVideoFile(imagePath))
+                    return std::make_shared<VideoFileReader>(imagePath);
+                return nullptr;
             }
             else
             {

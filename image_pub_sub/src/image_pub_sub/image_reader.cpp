@@ -49,8 +49,6 @@ std::optional<cv::Mat> FolderImageReader::get()
 FileImageReader::FileImageReader(fs::path imagePath)
     : _isReadOnce{false}
 {
-    if (!fs::is_regular_file(imagePath))
-        throw std::runtime_error("image path is not a regular file");
     _image = cv::imread(imagePath);
     if (_image.empty())
         throw std::runtime_error("image path is not an image");
@@ -67,4 +65,59 @@ std::optional<cv::Mat> FileImageReader::get()
 
     _isReadOnce = true;
     return _image;
+}
+
+bool FileImageReader::isImageFile(const std::filesystem::path &path)
+{
+    auto image = cv::imread(path);
+    return !image.empty();
+}
+
+
+///////////////////////////////////////////////////////
+
+VideoFileReader::VideoFileReader(const fs::path &videoPath)
+    : _video{cv::VideoCapture(videoPath)}
+{
+    if (!_video.isOpened())
+    {
+        throw std::runtime_error("Cannot read video path or the extension is not supported");
+    }
+}
+
+std::optional<cv::Mat> VideoFileReader::get()
+{
+    cv::Mat frame;
+    if (_video.read(frame))
+    {
+        return frame;
+    }
+
+    _video.release();
+    if (isLoop())
+    {
+        _video.open(_videoPath);
+        if (_video.read(frame))
+        {
+            return frame;
+        }
+    }
+    return std::nullopt;
+}
+
+size_t VideoFileReader::size() const
+{
+    double frameCount = _video.get(cv::CAP_PROP_FRAME_COUNT);
+    return static_cast<size_t>(frameCount);
+}
+
+bool VideoFileReader::isVideoFile(const std::filesystem::path &path)
+{
+    cv::Mat frame;
+    auto video = cv::VideoCapture(path);
+    if (video.read(frame))
+    {
+        return true;
+    }
+    return false;
 }
